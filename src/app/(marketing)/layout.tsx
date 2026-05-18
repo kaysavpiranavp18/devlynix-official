@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useScrollDirection } from '@/lib/hooks/useScrollDirection';
 import Link from 'next/link';
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default function MarketingLayout({
   children,
@@ -31,9 +32,16 @@ export default function MarketingLayout({
           </div>
 
           <div className="hidden items-center gap-4 md:flex">
-            <Link href="/auth/login" className="rounded-lg bg-[#C6FF00] px-5 py-2 text-sm font-bold text-black transition-all hover:scale-105 shadow-[0_0_15px_rgba(198,255,0,0.2)]">
-              Enter Hub (Demo)
-            </Link>
+            <Show when="signed-out">
+              <SignInButton>
+                <button className="rounded-lg bg-[#C6FF00] px-5 py-2 text-sm font-bold text-black transition-all hover:scale-105 shadow-[0_0_15px_rgba(198,255,0,0.2)]">
+                  Enter Hub
+                </button>
+              </SignInButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
           </div>
 
           <button className="md:hidden text-white z-50 p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -51,9 +59,18 @@ export default function MarketingLayout({
             <div className="w-full h-px bg-white/10 my-4"></div>
             
             <div className="w-full flex flex-col gap-4">
-              <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-4 rounded-xl bg-[#C6FF00] text-black font-bold text-lg text-center">
-                Enter Hub (Demo)
-              </Link>
+              <Show when="signed-out">
+                <SignInButton>
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="w-full py-4 rounded-xl bg-[#C6FF00] text-black font-bold text-lg text-center">
+                    Enter Hub
+                  </button>
+                </SignInButton>
+              </Show>
+              <Show when="signed-in">
+                <div className="flex justify-center">
+                  <UserButton />
+                </div>
+              </Show>
             </div>
           </div>
         </div>

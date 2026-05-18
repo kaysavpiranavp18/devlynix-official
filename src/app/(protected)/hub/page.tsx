@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockAuth } from '@/lib/auth';
+import { useUser, useAuth } from '@clerk/nextjs';
+import { createClerkSupabaseClient } from '@/lib/supabase';
 import { extractUsernameFromUrl, fetchGithubProfile, fetchGithubRepos } from '@/lib/github';
-import { 
-  GitBranch, User, BookOpen, Users, Star, GitFork, ShieldCheck, 
+import {
+  GitBranch, User, BookOpen, Star, GitFork, ShieldCheck,
   Trophy, Flame, Clock, MapPin, ExternalLink, Calendar
 } from 'lucide-react';
 import { GitHubCalendar } from 'react-github-calendar';
@@ -16,37 +17,77 @@ export default function BuilderDashboard() {
   const [githubUser, setGithubUser] = useState<any>(null);
   const [githubRepos, setGithubRepos] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
 
   useEffect(() => {
-    const session = mockAuth.getSession();
-    if (!session) {
-      router.push('/auth/login');
+    if (!isLoaded) return;
+
+    if (!isSignedIn || !user) {
+      router.push('/');
       return;
     }
 
-    const localProfile = mockAuth.getProfile();
-    if (!localProfile) {
-      router.push('/onboarding');
-      return;
-    }
-    
-    setProfile(localProfile);
+    const loadProfile = async () => {
+      try {
+        const token = await getToken({ template: 'supabase' });
+        if (token) {
+          const client = createClerkSupabaseClient(token);
+          const { data } = await client
+            .from('profiles')
+            .select('*')
+            .eq('clerk_user_id', user.id)
+            .maybeSingle();
 
-    const loadGithubData = async () => {
-      const username = extractUsernameFromUrl(localProfile.githubUrl);
-      if (username) {
-        const [user, repos] = await Promise.all([
-          fetchGithubProfile(username),
-          fetchGithubRepos(username)
-        ]);
-        setGithubUser(user);
-        setGithubRepos(repos || []);
+          if (!data) {
+            // No profile in Supabase — send to onboarding
+            router.push('/onboarding');
+            return;
+          }
+
+          setProfile({
+            fullName: data.full_name,
+            username: data.username,
+            bio: data.bio,
+            college: data.college,
+            yearOfStudy: data.year_of_study,
+            primaryRole: data.primary_role,
+            experience: data.experience,
+            skills: data.skills ?? [],
+            interests: data.interests ?? [],
+            githubUrl: data.github_url,
+            linkedinUrl: data.linkedin_url,
+            portfolioUrl: data.portfolio_url,
+            xp: data.xp ?? 0,
+            builderLevel: data.builder_level ?? 'Initiate',
+            streakDays: data.streak_days ?? 0,
+          });
+
+          // Load GitHub data
+          const username = extractUsernameFromUrl(data.github_url ?? '');
+          if (username) {
+            const [ghUser, repos] = await Promise.all([
+              fetchGithubProfile(username),
+              fetchGithubRepos(username),
+            ]);
+            setGithubUser(ghUser);
+            setGithubRepos(repos ?? []);
+          }
+        } else {
+          // Supabase JWT not configured — redirect to onboarding
+          router.push('/onboarding');
+          return;
+        }
+      } catch {
+        router.push('/onboarding');
+        return;
       }
+
       setIsLoading(false);
     };
 
-    loadGithubData();
-  }, [router]);
+    loadProfile();
+  }, [isLoaded, isSignedIn, user, router, getToken]);
 
   if (isLoading || !profile) {
     return (
@@ -78,13 +119,13 @@ export default function BuilderDashboard() {
           <div className="flex items-center gap-4">
             <div className="bg-[#111] border border-white/10 rounded-2xl p-4 min-w-[120px] text-center">
               <div className="text-2xl font-bold text-white flex justify-center items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-400" /> 1250
+                <Trophy className="w-5 h-5 text-yellow-400" /> {profile.xp}
               </div>
               <div className="text-xs text-gray-500 uppercase font-mono mt-1">Total XP</div>
             </div>
             <div className="bg-[#111] border border-white/10 rounded-2xl p-4 min-w-[120px] text-center">
               <div className="text-2xl font-bold text-white flex justify-center items-center gap-2">
-                <Flame className="w-5 h-5 text-orange-500" /> 14
+                <Flame className="w-5 h-5 text-orange-500" /> {profile.streakDays}
               </div>
               <div className="text-xs text-gray-500 uppercase font-mono mt-1">Day Streak</div>
             </div>
