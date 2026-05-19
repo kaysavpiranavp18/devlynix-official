@@ -5,10 +5,10 @@ import { FAQItem } from '@/components/ui/FAQItem';
 
 export const FAQSection = () => {
   return (
-    <section id="faq" className="py-32 bg-[#030303]">
-      <div className="mx-auto max-w-3xl px-6">
-        <div className="text-center mb-16 reveal-element">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Frequently Asked <br/> Questions</h2>
+    <section id="faq" className="py-16 sm:py-24 lg:py-32 bg-[#030303]">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16 reveal-element">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">Frequently Asked <br/> Questions</h2>
         </div>
         <div className="space-y-2">
           <FAQItem 

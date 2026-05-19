@@ -151,7 +151,7 @@ export default function OnboardingPage() {
   };
 
   const renderStepIndicators = () => (
-    <div className="flex justify-between items-center mb-12 relative">
+    <div className="flex justify-between items-center mb-8 sm:mb-12 relative">
       <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/10 -translate-y-1/2 z-0" />
       <div
         className="absolute top-1/2 left-0 h-0.5 bg-[#C6FF00] -translate-y-1/2 z-0 transition-all duration-500"
@@ -160,7 +160,7 @@ export default function OnboardingPage() {
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+          className={`relative z-10 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-300 ${
             step > i
               ? 'bg-[#C6FF00] border-[#C6FF00] text-black'
               : step === i
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
               : 'bg-[#0A0A0A] border-white/20 text-gray-500'
           }`}
         >
-          {step > i ? <CheckCircle2 className="w-5 h-5" /> : <span className="font-mono font-bold">{i}</span>}
+          {step > i ? <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <span className="font-mono font-bold text-sm sm:text-base">{i}</span>}
         </div>
       ))}
     </div>
@@ -289,7 +289,7 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-mono text-gray-400 mb-4">Experience Level</label>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4">
                     {['Beginner', 'Intermediate', 'Advanced'].map(level => (
                       <div key={level} onClick={() => updateForm('experience', level)}
                         className={`flex-1 text-center cursor-pointer border rounded-xl px-4 py-4 transition-all ${
@@ -395,7 +395,7 @@ export default function OnboardingPage() {
           )}
 
           {/* Controls */}
-          <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
+          <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-white/10 flex items-center justify-between gap-3">
             {step > 1 ? (
               <button onClick={handlePrev} className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/5 transition-colors">
                 <ChevronLeft className="w-4 h-4" /> Back
