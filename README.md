@@ -1,6 +1,6 @@
 # Devlynix | Code. Ship. Dominate.
 
-This is a premium [Next.js](https://nextjs.org) project designed for production-grade engineering and community building.
+Check it out: https://devlynix.xyz
 
 ## 🛠️ Tech Stack
 - **Framework**: Next.js 15+ (App Router)
