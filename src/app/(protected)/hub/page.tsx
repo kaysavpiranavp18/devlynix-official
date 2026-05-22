@@ -33,11 +33,16 @@ export default function BuilderDashboard() {
         const token = await getToken({ template: 'supabase' });
         if (token) {
           const client = createClerkSupabaseClient(token);
-          const { data } = await client
+          const { data, error } = await client
             .from('profiles')
             .select('*')
             .eq('clerk_user_id', user.id)
             .maybeSingle();
+
+          if (error) {
+            console.error("Supabase error:", JSON.stringify(error, null, 2));
+            throw error;
+          }
 
           if (!data) {
             // No profile in Supabase — send to onboarding
@@ -63,27 +68,32 @@ export default function BuilderDashboard() {
             streakDays: data.streak_days ?? 0,
           });
 
-          // Load GitHub data
+          // Unblock the UI immediately
+          setIsLoading(false);
+
+          // Load GitHub data asynchronously in the background
           const username = extractUsernameFromUrl(data.github_url ?? '');
           if (username) {
-            const [ghUser, repos] = await Promise.all([
+            Promise.all([
               fetchGithubProfile(username),
               fetchGithubRepos(username),
-            ]);
-            setGithubUser(ghUser);
-            setGithubRepos(repos ?? []);
+            ]).then(([ghUser, repos]) => {
+              setGithubUser(ghUser);
+              setGithubRepos(repos ?? []);
+            }).catch(ghErr => {
+              console.error('Failed to load GitHub data:', ghErr);
+            });
           }
         } else {
           // Supabase JWT not configured — redirect to onboarding
           router.push('/onboarding');
           return;
         }
-      } catch {
+      } catch (err) {
+        console.error('Failed to load profile from Supabase:', err);
         router.push('/onboarding');
         return;
       }
-
-      setIsLoading(false);
     };
 
     loadProfile();

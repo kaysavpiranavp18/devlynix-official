@@ -81,13 +81,20 @@ export default function OnboardingPage() {
           .eq('clerk_user_id', user!.id)
           .maybeSingle();
 
-        if (!error && data) {
+        if (error) {
+          console.error("Supabase error:", JSON.stringify(error, null, 2));
+          throw error;
+        }
+
+        if (data) {
           router.push('/hub');
           return;
         }
 
         setIsChecking(false);
-      } catch {
+
+      } catch (err) {
+        console.error('Failed to check profile in Supabase:', err);
         setSupabaseReady(false);
         setIsChecking(false);
       }
@@ -140,9 +147,12 @@ export default function OnboardingPage() {
           builder_level: 'Initiate',
           streak_days: 0,
         });
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase error:", JSON.stringify(error, null, 2));
+          throw error;
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save profile to Supabase:', err);
       // Don't block the user — still navigate to hub
     }
