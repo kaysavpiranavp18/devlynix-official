@@ -32,6 +32,10 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [supabaseReady, setSupabaseReady] = useState(false);
+  
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [usernameAvailable, setUsernameAvailable] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -103,6 +107,49 @@ export default function OnboardingPage() {
     checkProfile();
   }, [isLoaded, isSignedIn, user, router, getToken]);
 
+  // Debounced Username Check
+  useEffect(() => {
+    if (!formData.username) {
+      setUsernameError("");
+      setUsernameAvailable(false);
+      setIsCheckingUsername(false);
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    setUsernameError("");
+    setUsernameAvailable(false);
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const token = await getToken({ template: 'supabase' });
+        if (!token) return;
+
+        const client = createClerkSupabaseClient(token);
+        const { data, error } = await client
+          .from('profiles')
+          .select('clerk_user_id')
+          .eq('username', formData.username)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Supabase username check error:", error);
+          setUsernameError("Error checking username");
+        } else if (data && data.clerk_user_id !== user?.id) {
+          setUsernameError("Username already taken ❌");
+        } else {
+          setUsernameAvailable(true);
+        }
+      } catch (err) {
+        console.error('Failed to verify username', err);
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.username, getToken, user?.id]);
+
   const handleNext = () => setStep(prev => Math.min(prev + 1, 4));
   const handlePrev = () => setStep(prev => Math.max(prev - 1, 1));
 
@@ -146,15 +193,22 @@ export default function OnboardingPage() {
           xp: 0,
           builder_level: 'Initiate',
           streak_days: 0,
-        });
+        }, { onConflict: 'clerk_user_id' });
         if (error) {
           console.error("Supabase error:", JSON.stringify(error, null, 2));
+          if (error.code === '23505' && error.message.includes('profiles_username_key')) {
+            alert("This username is already taken by someone else! Please go back to Step 1 and choose a different username.");
+            setIsSubmitting(false);
+            return;
+          }
           throw error;
         }
       }
     } catch (err: any) {
       console.error('Failed to save profile to Supabase:', err);
-      // Don't block the user — still navigate to hub
+      alert("Failed to save profile. Please try again.");
+      setIsSubmitting(false);
+      return;
     }
 
     router.push('/hub');
@@ -240,8 +294,17 @@ export default function OnboardingPage() {
                   <div>
                     <label className="block text-sm font-mono text-gray-400 mb-2">Username</label>
                     <input type="text" value={formData.username} onChange={(e) => updateForm('username', e.target.value)}
-                      className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#C6FF00] transition-colors placeholder:text-gray-600"
+                      className={`w-full bg-[#111] border rounded-xl px-4 py-3 text-white focus:outline-none transition-colors placeholder:text-gray-600 ${
+                        usernameError ? 'border-red-500/50 focus:border-red-500' : 
+                        usernameAvailable ? 'border-green-500/50 focus:border-green-500' : 
+                        'border-white/10 focus:border-[#C6FF00]'
+                      }`}
                       placeholder="@yashharfode" />
+                    <div className="h-5 mt-1 text-xs font-mono">
+                      {isCheckingUsername && <span className="text-gray-400 animate-pulse">Checking...</span>}
+                      {!isCheckingUsername && usernameError && <span className="text-red-500">{usernameError}</span>}
+                      {!isCheckingUsername && usernameAvailable && <span className="text-green-500">Username available ✅</span>}
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -413,7 +476,10 @@ export default function OnboardingPage() {
             ) : <div />}
 
             {step < 4 ? (
-              <button onClick={handleNext} className="flex items-center gap-2 px-8 py-3 rounded-xl bg-white text-black font-bold hover:bg-[#C6FF00] transition-colors">
+              <button 
+                onClick={handleNext} 
+                disabled={step === 1 && (isCheckingUsername || !!usernameError)}
+                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-white text-black font-bold hover:bg-[#C6FF00] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 Next <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
