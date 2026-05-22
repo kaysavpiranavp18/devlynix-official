@@ -25,14 +25,18 @@ export default function ProtectedLayout({
         const token = await getToken({ template: 'supabase' });
         if (!token) return;
         const client = createClerkSupabaseClient(token);
-        const { data } = await client
+        const { data, error } = await client
           .from('profiles')
           .select('streak_days')
           .eq('clerk_user_id', user.id)
           .maybeSingle();
+        if (error) {
+          console.error("Supabase error:", JSON.stringify(error, null, 2));
+          throw error;
+        }
         if (data) setStreakDays(data.streak_days ?? 0);
-      } catch {
-        // silently fail — streak just won't show
+      } catch (err) {
+        console.error('Failed to fetch streak:', err);
       }
     };
     fetchStreak();
