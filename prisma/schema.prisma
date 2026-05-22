@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  HACKER
+  ORGANIZER
+  ADMIN
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Maps to your existing 'profiles' table from the onboarding flow
+model User {
+  id            String   @id @default(uuid())
+  clerk_user_id String   @unique
+  email         String?
+  full_name     String?
+  username      String?  @unique
+  bio           String?
+  college       String?
+  year_of_study String?
+  primary_role  String?
+  experience    String?
+  skills        String[] 
+  interests     String[]
+  github_url    String?
+  linkedin_url  String?
+  portfolio_url String?
+  xp            Int      @default(0)
+  builder_level String   @default("Initiate")
+  streak_days   Int      @default(0)
+  
+  role          Role     @default(HACKER)
+
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  submissions   ProjectSubmission[]
+  organizerApplications OrganizerApplication[]
+
+  @@map("profiles")
+}
+
+model OrganizerApplication {
+  id           String            @id @default(uuid())
+  company_name String
+  website      String?
+  description  String
+  status       ApplicationStatus @default(PENDING)
+  
+  user_id      String
+  user         User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
+
+  @@map("organizer_applications")
+}
+
+model Hackathon {
+  id               String   @id @default(uuid())
+  title            String
+  description      String
+  start_date       DateTime
+  end_date         DateTime
+  is_active        Boolean  @default(true)
+  
+  approval_status  String   @default("PENDING")
+  is_featured      Boolean  @default(false)
+  
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  submissions      ProjectSubmission[]
+
+  @@map("hackathons")
+}
+
+model ProjectSubmission {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  demo_url     String?
+  github_url   String
+  
+  user_id      String
+  user         User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  hackathon_id String
+  hackathon    Hackathon @relation(fields: [hackathon_id], references: [id], onDelete: Cascade)
+
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  @@map("project_submissions")
+}

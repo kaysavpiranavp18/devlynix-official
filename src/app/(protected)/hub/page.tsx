@@ -45,7 +45,7 @@ export default function BuilderDashboard() {
           }
 
           if (!data) {
-            // No profile in Supabase — send to onboarding
+            // If we successfully queried but got no data, they need to onboard
             router.push('/onboarding');
             return;
           }
@@ -85,14 +85,30 @@ export default function BuilderDashboard() {
             });
           }
         } else {
-          // Supabase JWT not configured — redirect to onboarding
-          router.push('/onboarding');
-          return;
+          // Supabase JWT not configured — don't redirect to onboarding, show an error state
+          console.error('Supabase JWT template not configured in Clerk.');
+          setProfile({
+            fullName: user.fullName || 'Builder',
+            username: user.username || '',
+            bio: 'Please configure your Clerk Supabase JWT template to load your profile.',
+            xp: 0,
+            builderLevel: 'Error',
+            streakDays: 0,
+          });
+          setIsLoading(false);
         }
       } catch (err) {
         console.error('Failed to load profile from Supabase:', err);
-        router.push('/onboarding');
-        return;
+        // Don't redirect, just show the error state
+        setProfile({
+          fullName: user.fullName || 'Builder',
+          username: user.username || '',
+          bio: 'Row Level Security (RLS) is blocking the read, or the table does not exist.',
+          xp: 0,
+          builderLevel: 'Error',
+          streakDays: 0,
+        });
+        setIsLoading(false);
       }
     };
 
