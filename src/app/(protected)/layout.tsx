@@ -83,7 +83,7 @@ export default function ProtectedLayout({
       </div>
 
       {/* Sidebar */}
-      <aside className={`
+      <aside className={`scrollbar-theme
         fixed md:static inset-y-0 left-0 z-40 w-64 border-r border-white/5 bg-[#0A0A0A] transition-transform duration-300 ease-in-out flex flex-col
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}>
@@ -92,7 +92,7 @@ export default function ProtectedLayout({
           <span className="text-xl font-bold tracking-tight text-white">Devlynix</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2 mt-16 md:mt-0">
+        <div className="scrollbar-theme flex-1 overflow-y-auto py-6 px-4 space-y-2 mt-16 md:mt-0">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
@@ -126,7 +126,7 @@ export default function ProtectedLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 relative overflow-y-auto pt-16 md:pt-0">
+      <main className="scrollbar-theme flex-1 relative overflow-y-auto pt-16 md:pt-0">
         <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{
           backgroundSize: "40px 40px",
           backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)"

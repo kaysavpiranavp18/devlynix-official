@@ -255,7 +255,7 @@ export default function BuilderDashboard() {
                 <h3 className="text-lg font-bold text-white">Contribution Activity</h3>
                 <span className="text-xs text-gray-500 font-mono">GitHub Data</span>
               </div>
-              <div className="w-full bg-[#111] rounded-xl border border-white/5 p-4 overflow-x-auto">
+              <div className="scrollbar-theme w-full bg-[#111] rounded-xl border border-white/5 p-4 overflow-x-auto">
                 {githubUser?.login ? (
                   <div className="min-w-max">
                     <GitHubCalendar 
