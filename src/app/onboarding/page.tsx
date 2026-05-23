@@ -176,6 +176,7 @@ export default function OnboardingPage() {
       if (token) {
         const client = createClerkSupabaseClient(token);
         const { error } = await client.from('profiles').upsert({
+          id: user.id,
           clerk_user_id: user.id,
           email: user.primaryEmailAddress?.emailAddress ?? null,
           full_name: formData.fullName,
@@ -193,6 +194,7 @@ export default function OnboardingPage() {
           xp: 0,
           builder_level: 'Initiate',
           streak_days: 0,
+          updated_at: new Date().toISOString(),
         }, { onConflict: 'clerk_user_id' });
         if (error) {
           console.error("Supabase error:", JSON.stringify(error, null, 2));
