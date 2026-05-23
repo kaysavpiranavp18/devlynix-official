@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 export async function submitOrganizerApplication(formData: FormData) {
-  const { userId } = auth();
+  const { userId } = await auth();
   
   if (!userId) {
     return { error: "You must be logged in to apply." };

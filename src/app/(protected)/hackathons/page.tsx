@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import HackathonsClient from "./HackathonsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function HackathonsPage() {
   // Fetch only APPROVED hackathons
   // Sort them so that is_featured == true comes first, then by creation date

@@ -112,7 +112,7 @@ export default function ProtectedLayout({
 
         <div className="p-4 border-t border-white/5">
           <div className="flex items-center gap-3 bg-[#111] p-3 rounded-xl border border-white/5">
-            <UserButton afterSignOutUrl="/sign-in" />
+            <UserButton />
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-bold truncate">{user?.firstName || 'Builder'}</span>
               {streakDays !== null && (

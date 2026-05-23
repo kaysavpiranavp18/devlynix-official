@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Building2, Terminal, Users, PlusCircle } from "lucide-react";
 
 export default async function OrganizerDashboard() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
   // Securely verify role on the server

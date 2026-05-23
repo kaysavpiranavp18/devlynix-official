@@ -5,7 +5,7 @@ import { ShieldAlert, Building2, CheckCircle, XCircle, Globe, CalendarDays } fro
 import ApplicationRow from "./ApplicationRow";
 
 export default async function AdminApplicationsPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
   
   if (!userId) {
     redirect("/sign-in");
