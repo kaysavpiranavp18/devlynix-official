@@ -24,7 +24,8 @@ async function changeUserRole(formData: FormData) {
     data: { role: newRole }
   });
 
-  await clerkClient().users.updateUserMetadata(targetUser.clerk_user_id, {
+  const client = await clerkClient();
+  await client.users.updateUserMetadata(targetUser.clerk_user_id, {
     publicMetadata: { role: newRole }
   });
 
