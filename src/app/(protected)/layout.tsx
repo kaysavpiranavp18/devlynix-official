@@ -31,6 +31,8 @@ export default function ProtectedLayout({
   
   const [streakDays, setStreakDays] = useState<number | null>(null);
   const [xp, setXp] = useState<number | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [roleLoaded, setRoleLoaded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -56,7 +58,36 @@ export default function ProtectedLayout({
     fetchStats();
   }, [user, getToken]);
 
-  const userRole = user?.publicMetadata?.role as string | undefined;
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+
+    const fetchRole = async () => {
+      try {
+        const response = await fetch('/api/me/role', { cache: 'no-store' });
+        const data = await response.json();
+
+        if (isMounted) {
+          setUserRole(data.role ?? null);
+        }
+      } catch {
+        if (isMounted) {
+          setUserRole(null);
+        }
+      } finally {
+        if (isMounted) {
+          setRoleLoaded(true);
+        }
+      }
+    };
+
+    fetchRole();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   const navItems = [
     { name: 'Hub', href: '/hub', icon: Home },
@@ -67,11 +98,11 @@ export default function ProtectedLayout({
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
-  if (userRole === 'ADMIN') {
+  if (roleLoaded && userRole === 'ADMIN') {
     navItems.push({ name: 'Admin Console', href: '/applications', icon: ShieldAlert });
-  } else if (userRole === 'ORGANIZER') {
+  } else if (roleLoaded && userRole === 'ORGANIZER') {
     navItems.push({ name: 'Organizer Dashboard', href: '/organizer', icon: Building2 });
-  } else {
+  } else if (roleLoaded) {
     navItems.push({ name: 'Host a Hackathon', href: '/apply-to-host', icon: Building2 });
   }
 

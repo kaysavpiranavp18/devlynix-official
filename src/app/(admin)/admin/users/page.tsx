@@ -3,6 +3,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Users, ShieldAlert, Zap, Search } from "lucide-react";
 import { revalidatePath } from "next/cache";
+import { UserRoleSelect } from "./UserRoleSelect";
 
 // Inline Server Action to change role
 async function changeUserRole(formData: FormData) {
@@ -102,16 +103,7 @@ export default async function AdminUsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <form action={changeUserRole} className="inline-block">
                       <input type="hidden" name="userId" value={user.id} />
-                      <select 
-                        name="role" 
-                        defaultValue={user.role}
-                        className="bg-[#111] border border-white/5 text-xs rounded-md px-2 py-1 text-gray-300 focus:outline-none focus:border-emerald-500"
-                        onChange={(e) => e.target.form?.requestSubmit()}
-                      >
-                        <option value="HACKER">HACKER</option>
-                        <option value="ORGANIZER">ORGANIZER</option>
-                        <option value="ADMIN">ADMIN</option>
-                      </select>
+                      <UserRoleSelect currentRole={user.role} />
                     </form>
                   </td>
                 </tr>

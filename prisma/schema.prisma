@@ -71,16 +71,20 @@ model OrganizerApplication {
 model Hackathon {
   id               String   @id @default(uuid())
   title            String
-  description      String
+  tagline          String?
+  description      String?
+  organization_name String
+  requested_by_id  String?
+  theme            String?
+  mode             String?  @default("Online")
   start_date       DateTime
   end_date         DateTime
-  is_active        Boolean  @default(true)
-  
+  prize_pool       String?
+  max_team_size    Int?     @default(4)
   approval_status  String   @default("PENDING")
   is_featured      Boolean  @default(false)
   
   created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
 
   submissions      ProjectSubmission[]
 

@@ -4,9 +4,7 @@ import HackathonsClient from "./HackathonsClient";
 export const dynamic = "force-dynamic";
 
 export default async function HackathonsPage() {
-  // Fetch only APPROVED hackathons
-  // Sort them so that is_featured == true comes first, then by creation date
-  const approvedHackathons = await prisma.hackathon.findMany({
+  const hackathons = await prisma.hackathon.findMany({
     where: {
       approval_status: "APPROVED"
     },
@@ -16,5 +14,5 @@ export default async function HackathonsPage() {
     ]
   });
 
-  return <HackathonsClient initialHackathons={approvedHackathons} />;
+  return <HackathonsClient initialHackathons={hackathons} />;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { UserButton, useUser } from '@clerk/nextjs';
 import { 
@@ -23,12 +23,58 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [roleLoaded, setRoleLoaded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Note: Actual secure role verification is handled in Server Components/Actions.
-  // This is just client-side rendering logic.
-  if (isLoaded && user?.publicMetadata?.role !== 'ADMIN') {
-    router.push('/hub');
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!user) {
+      setRoleLoaded(true);
+      setUserRole(null);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadRole = async () => {
+      try {
+        const response = await fetch('/api/me/role', { cache: 'no-store' });
+        const data = await response.json();
+
+        if (isMounted) {
+          setUserRole(data.role ?? null);
+        }
+      } catch {
+        if (isMounted) {
+          setUserRole(null);
+        }
+      } finally {
+        if (isMounted) {
+          setRoleLoaded(true);
+        }
+      }
+    };
+
+    loadRole();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoaded, user]);
+
+  useEffect(() => {
+    if (roleLoaded && userRole !== 'ADMIN') {
+      router.replace('/hub');
+    }
+  }, [roleLoaded, userRole, router]);
+
+  if (!isLoaded || !roleLoaded) {
+    return null;
+  }
+
+  if (userRole !== 'ADMIN') {
     return null;
   }
 
@@ -87,7 +133,7 @@ export default function AdminLayout({
             <span className="text-sm">Exit to Hub</span>
           </Link>
           <div className="flex items-center gap-3 bg-[#111] p-3 rounded-xl border border-white/5">
-            <UserButton afterSignOutUrl="/sign-in" />
+            <UserButton />
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium text-white truncate">{user?.firstName || 'Admin'}</span>
               <span className="text-xs text-gray-500 font-mono">System Administrator</span>

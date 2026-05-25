@@ -19,7 +19,13 @@ export default async function AdminDashboardPage() {
 
   // Fetch metrics
   const totalUsers = await prisma.user.count();
-  const activeHackathons = await prisma.hackathon.count({ where: { is_active: true } });
+  const activeHackathons = await prisma.hackathon.count({
+    where: {
+      approval_status: "APPROVED",
+      start_date: { lte: new Date() },
+      end_date: { gte: new Date() }
+    }
+  });
   const pendingApps = await prisma.organizerApplication.count({ where: { status: "PENDING" } });
   const totalSubmissions = await prisma.projectSubmission.count();
 
